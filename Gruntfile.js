@@ -136,6 +136,17 @@ module.exports = function(grunt) {
                       'dist/angular-leaflet-directive.min.no-header.js'
                      ],
                 dest: 'dist/angular-leaflet-directive.min.js',
+            },
+            docular: {
+                groups: [
+                    {
+                        groupTitle: 'Leaflet Directive',
+                        groupId: 'angular-leaflet-directive',
+                        showSource: true
+                    }
+                ],
+                showDocularDocs: true,
+                showAngularDocs: true
             }
         },
     });
@@ -145,6 +156,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-docular');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-ngmin');
 

@@ -16,8 +16,8 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "grunt-cli": "latest",
     "grunt": "latest",
+    "grunt-docular": "latest",
     "grunt-contrib-uglify": "latest",
     "grunt-contrib-jshint": "latest",
     "grunt-contrib-copy": "latest",
