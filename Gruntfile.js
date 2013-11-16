@@ -104,6 +104,30 @@ module.exports = function(grunt) {
                 tasks: ['jshint:grunt']
             }
         },
+        docular: {
+            groups: [
+                {
+                    groupTitle: 'Leaflet',
+                    groupId: 'angular-leaflet-directive',
+                    groupIcon: 'icon-leaf',
+                    showSource: true,
+                    sections: [ {
+                        id: "leaflet",
+                        title: "leaflet Directive",
+                        scripts: ['src/directives/leaflet.js']
+                    },
+                    {
+                        id: "center",
+                        title: "center Attribute",
+                        scripts: ['src/directives/center.js']
+
+                    }]
+                }
+            ],
+            docular_partial_home: 'src/docular/home.html',
+            showAngularDocs: false,
+            docular_webapp_target : 'docs'
+        },
         concat: {
             dist: {
                 options: {
@@ -137,18 +161,7 @@ module.exports = function(grunt) {
                      ],
                 dest: 'dist/angular-leaflet-directive.min.js',
             },
-            docular: {
-                groups: [
-                    {
-                        groupTitle: 'Leaflet Directive',
-                        groupId: 'angular-leaflet-directive',
-                        showSource: true
-                    }
-                ],
-                showDocularDocs: true,
-                showAngularDocs: true
-            }
-        },
+        }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');

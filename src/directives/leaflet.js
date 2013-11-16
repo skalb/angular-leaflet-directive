@@ -1,3 +1,14 @@
+/**
+ * @ngdoc directive
+ * @name leaflet-directive
+ * @restrict EA
+ * @description
+ *
+ * ## AngularJS Leaflet Directive
+ *
+ * This directive allows to interact with a map
+ * managed with the Leaflet javascript libray.
+ */
 angular.module("leaflet-directive", []).directive('leaflet', function ($log, $q, leafletData, leafletMapDefaults, leafletHelpers) {
     return {
         restrict: "E",
