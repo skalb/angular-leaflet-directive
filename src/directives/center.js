@@ -51,7 +51,13 @@ angular.module("leaflet-directive").directive('center', function ($log, $parse, 
                         return;
                     }
 
-                    map.setView([center.lat, center.lng], center.zoom);
+                    try {
+                        map.setView([center.lat, center.lng], center.zoom);
+                    }
+                    catch(e) {
+                        // hack to clobber leaflet error
+                    }
+
                     changingModel = false;
                 }, true);
 
