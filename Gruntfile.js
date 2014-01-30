@@ -240,6 +240,7 @@ module.exports = function(grunt) {
                     'src/directives/leaflet.js',
                     'src/directives/center.js',
                     'src/directives/tiles.js',
+                    'src/directives/functionalTiles.js',
                     'src/directives/legend.js',
                     'src/directives/geojson.js',
                     'src/directives/layers.js',

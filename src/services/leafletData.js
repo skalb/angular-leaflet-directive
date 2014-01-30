@@ -5,6 +5,7 @@ angular.module("leaflet-directive").service('leafletData', function ($log, $q, l
 
     var maps = {};
     var tiles = {};
+    var functionalTiles = {};
     var layers = {};
     var paths = {};
     var markers = {};
@@ -62,6 +63,17 @@ angular.module("leaflet-directive").service('leafletData', function ($log, $q, l
 
     this.getTiles = function(scopeId) {
         var defer = getDefer(tiles, scopeId);
+        return defer.promise;
+    };
+
+    this.setFunctionalTiles = function(leafletFunctionalTiles, scopeId) {
+        var defer = getUnresolvedDefer(functionalTiles, scopeId);
+        defer.resolve(leafletFunctionalTiles);
+        setResolvedDefer(functionalTiles, scopeId);
+    };
+
+    this.getFunctionalTiles = function(scopeId) {
+        var defer = getDefer(functionalTiles, scopeId);
         return defer.promise;
     };
 

@@ -13,6 +13,7 @@ angular.module("leaflet-directive", []).directive('leaflet', function ($q, leafl
             geojson: '=geojson',
             paths: '=paths',
             tiles: '=tiles',
+            functionalTiles: '=functionalTiles',
             layers: '=layers',
             controls: '=controls',
             eventBroadcast: '=eventBroadcast'
@@ -60,7 +61,7 @@ angular.module("leaflet-directive", []).directive('leaflet', function ($q, leafl
             }
 
             // If no layers nor tiles defined, set the default tileLayer
-            if (!isDefined(attrs.tiles) && (!isDefined(attrs.layers))) {
+            if (!isDefined(attrs.tiles) && !isDefined(attrs.layers) && !isDefined(attrs.functionalTiles)) {
                 var tileLayerObj = L.tileLayer(defaults.tileLayer, defaults.tileLayerOptions);
                 tileLayerObj.addTo(map);
                 leafletData.setTiles(tileLayerObj);
