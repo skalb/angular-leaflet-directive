@@ -14,6 +14,7 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
                 markers = leafletScope.markers,
                 deleteMarker = leafletMarkersHelpers.deleteMarker,
                 addMarkerWatcher = leafletMarkersHelpers.addMarkerWatcher,
+                listenMarkerEvents = leafletMarkersHelpers.listenMarkerEvents,
                 addMarkerToGroup = leafletMarkersHelpers.addMarkerToGroup,
                 bindMarkerEvents = leafletEvents.bindMarkerEvents,
                 createMarker = leafletMarkersHelpers.createMarker;
@@ -61,7 +62,7 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
 
                                 // Bind message
                                 if (isDefined(markerData.message)) {
-                                    marker.bindPopup(markerData.message);
+                                    marker.bindPopup(markerData.message, markerData.popupOptions);
                                 }
 
                                 // Add the marker to a cluster group if needed
@@ -104,7 +105,8 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
                                         marker.openPopup();
                                     }
 
-                                } else {
+                                // Add the marker to the map if it hasn't been added to a layer or to a group
+                                } else if (!isDefined(markerData.group)) {
                                     // We do not have a layer attr, so the marker goes to the map layer
                                     map.addLayer(marker);
                                     if (markerData.focus === true) {
@@ -120,6 +122,7 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
 
                                 if (shouldWatch) {
                                     addMarkerWatcher(marker, newName, leafletScope, layers, map);
+                                    listenMarkerEvents(marker, markerData, leafletScope);
                                 }
                                 bindMarkerEvents(marker, newName, markerData, leafletScope);
                             }
