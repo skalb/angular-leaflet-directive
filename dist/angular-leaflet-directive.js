@@ -68,7 +68,7 @@ angular.module("leaflet-directive", []).directive('leaflet', function ($q, leafl
             if (!isDefined(attrs.tiles) && !isDefined(attrs.layers) && !isDefined(attrs.functionalTiles)) {
                 var tileLayerObj = L.tileLayer(defaults.tileLayer, defaults.tileLayerOptions);
                 tileLayerObj.addTo(map);
-                leafletData.setTiles(tileLayerObj);
+                leafletData.setTiles(tileLayerObj, attrs.id);
             }
 
             // Set zoom control configuration
@@ -417,6 +417,7 @@ angular.module("leaflet-directive").directive('geojson', function ($log, $rootSc
                                 },
                                 click: function(e) {
                                     safeApply(leafletScope, function() {
+                                        geojson.selected = feature;
                                         $rootScope.$broadcast('leafletDirectiveMap.geojsonClick', geojson.selected, e);
                                     });
                                 }
@@ -477,6 +478,9 @@ angular.module("leaflet-directive").directive('layers', function ($log, $q, leaf
                 leafletLayers.baselayers = {};
                 leafletLayers.controls = {};
                 leafletLayers.controls.layers = new L.control.layers();
+                if (isDefined(layers.options)) {
+                    leafletLayers.controls.layers.options = layers.options;
+                }
                 leafletLayers.controls.layers.setPosition(defaults.controlLayersPosition);
 
 
@@ -679,6 +683,7 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
                 markers = leafletScope.markers,
                 deleteMarker = leafletMarkersHelpers.deleteMarker,
                 addMarkerWatcher = leafletMarkersHelpers.addMarkerWatcher,
+                listenMarkerEvents = leafletMarkersHelpers.listenMarkerEvents,
                 addMarkerToGroup = leafletMarkersHelpers.addMarkerToGroup,
                 bindMarkerEvents = leafletEvents.bindMarkerEvents,
                 createMarker = leafletMarkersHelpers.createMarker;
@@ -726,7 +731,7 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
 
                                 // Bind message
                                 if (isDefined(markerData.message)) {
-                                    marker.bindPopup(markerData.message);
+                                    marker.bindPopup(markerData.message, markerData.popupOptions);
                                 }
 
                                 // Add the marker to a cluster group if needed
@@ -769,7 +774,8 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
                                         marker.openPopup();
                                     }
 
-                                } else {
+                                // Add the marker to the map if it hasn't been added to a layer or to a group
+                                } else if (!isDefined(markerData.group)) {
                                     // We do not have a layer attr, so the marker goes to the map layer
                                     map.addLayer(marker);
                                     if (markerData.focus === true) {
@@ -785,6 +791,7 @@ angular.module("leaflet-directive").directive('markers', function ($log, $rootSc
 
                                 if (shouldWatch) {
                                     addMarkerWatcher(marker, newName, leafletScope, layers, map);
+                                    listenMarkerEvents(marker, markerData, leafletScope);
                                 }
                                 bindMarkerEvents(marker, newName, markerData, leafletScope);
                             }
@@ -1488,7 +1495,7 @@ angular.module("leaflet-directive").factory('leafletEvents', function ($rootScop
                 if (!isDefined(leafletScope.eventBroadcast.marker)) {
                     // We do not have events enable/disable do we do nothing (all enabled by default)
                     markerEvents = _getAvailableMarkerEvents();
-                } else if (isObject(leafletScope.eventBroadcast.marker)) {
+                } else if (!isObject(leafletScope.eventBroadcast.marker)) {
                     // Not a valid object
                     $log.warn("[AngularJS - Leaflet] event-broadcast.marker must be an object check your model.");
                 } else {
@@ -1690,10 +1697,25 @@ angular.module("leaflet-directive").factory('leafletLayerHelpers', function ($ro
                 return L.tileLayer(params.url, params.options);
             }
         },
+        geoJSON:{
+            mustHaveUrl: true,
+            createLayer: function(params) {
+                if (!Helpers.GeoJSONPlugin.isLoaded()) {
+                    return;
+                }
+                return new L.TileLayer.GeoJSON(params.url, params.pluginOptions, params.options);
+            }
+        },
         wms: {
             mustHaveUrl: true,
             createLayer: function(params) {
                 return L.tileLayer.wms(params.url, params.options);
+            }
+        },
+        wmts: {
+            mustHaveUrl: true,
+            createLayer: function(params) {
+                return L.tileLayer.wmts(params.url, params.options);
             }
         },
         wfs: {
@@ -2190,6 +2212,7 @@ angular.module("leaflet-directive").factory('leafletMarkersHelpers', function ($
     var isDefined = leafletHelpers.isDefined,
         MarkerClusterPlugin = leafletHelpers.MarkerClusterPlugin,
         AwesomeMarkersPlugin = leafletHelpers.AwesomeMarkersPlugin,
+        safeApply     = leafletHelpers.safeApply,
         Helpers = leafletHelpers,
         isString = leafletHelpers.isString,
         isNumber  = leafletHelpers.isNumber,
@@ -2288,6 +2311,19 @@ angular.module("leaflet-directive").factory('leafletMarkersHelpers', function ($
                 map.addLayer(groups[groupName]);
             }
             groups[groupName].addLayer(marker);
+        },
+
+        listenMarkerEvents: function(marker, markerData, leafletScope) {
+            marker.on("popupopen", function(/* event */) {
+                safeApply(leafletScope, function() {
+                    markerData.focus = true;
+                });
+            });
+            marker.on("popupclose", function(/* event */) {
+                safeApply(leafletScope, function() {
+                    markerData.focus = false;
+                });
+            });
         },
 
         addMarkerWatcher: function(marker, name, leafletScope, layers, map) {
@@ -2696,6 +2732,18 @@ angular.module("leaflet-directive").factory('leafletHelpers', function ($q, $log
 					return false;
 				}
 			},
+        },
+        GeoJSONPlugin: {
+            isLoaded: function(){
+                return angular.isDefined(L.TileLayer.GeoJSON);
+            },
+            is: function(layer) {
+                if (this.isLoaded()) {
+                    return layer instanceof L.TileLayer.GeoJSON;
+                } else {
+                    return false;
+                }
+            }
         },
         Leaflet: {
             DivIcon: {
